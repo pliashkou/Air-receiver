@@ -1,0 +1,3 @@
+/Users/me/work/dashnex/air/app/.cxx/Debug/2o4o1db7/armeabi-v7a/CMakeFiles/airplay_crypto.dir
+/Users/me/work/dashnex/air/app/.cxx/Debug/2o4o1db7/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/me/work/dashnex/air/app/.cxx/Debug/2o4o1db7/armeabi-v7a/CMakeFiles/rebuild_cache.dir

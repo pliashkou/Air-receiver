@@ -1,0 +1,38 @@
+{
+  "buildFiles": [
+    "/Users/me/work/dashnex/air/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/me/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/me/work/dashnex/air/app/.cxx/Debug/2o4o1db7/arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/me/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/me/work/dashnex/air/app/.cxx/Debug/2o4o1db7/arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "airplay_crypto::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "airplay_crypto",
+      "output": "/Users/me/work/dashnex/air/app/build/intermediates/cxx/Debug/2o4o1db7/obj/arm64-v8a/libairplay_crypto.so",
+      "runtimeFiles": []
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/me/Library/Android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/me/Library/Android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": []
+}

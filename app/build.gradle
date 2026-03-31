@@ -1,0 +1,61 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.airreceiver.tv'
+    compileSdk 35
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.22.1"
+        }
+    }
+    defaultConfig {
+        applicationId "com.airreceiver.tv"
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+        }
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/BCKEY.SF', 'META-INF/BCKEY.DSA', 'META-INF/BC*.SF', 'META-INF/BC*.DSA']
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.leanback:leanback:1.2.0'
+
+    // mDNS / Bonjour — more reliable than Android NsdManager for AirPlay discovery
+    implementation 'org.jmdns:jmdns:3.5.9'
+
+    // Crypto: Curve25519 ECDH, AES-CTR, RSA for AirPlay protocol
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
+
+    // Coroutines for async networking
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Binary plist parsing (AirPlay 2 SETUP bodies)
+    implementation 'com.googlecode.plist:dd-plist:1.28'
+}

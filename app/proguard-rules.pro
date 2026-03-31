@@ -1,0 +1,4 @@
+-keep class org.bouncycastle.** { *; }
+-keep class javax.jmdns.** { *; }
+-dontwarn org.bouncycastle.**
+-dontwarn javax.jmdns.**

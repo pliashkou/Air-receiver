@@ -1,0 +1,8 @@
+# ninja log v5
+1	66	1774951216986170736	CMakeFiles/airplay_crypto.dir/playfair/playfair.c.o	a0425670d8bb4a61
+0	78	1774951217002775154	CMakeFiles/airplay_crypto.dir/airplay_jni.c.o	afdaa139eca2e757
+1	79	1774951217003869615	CMakeFiles/airplay_crypto.dir/playfair/modified_md5.c.o	4853426272983ed8
+2	82	1774951217008143709	CMakeFiles/airplay_crypto.dir/playfair/sap_hash.c.o	46eb6bf5c099d711
+1	98	1774951217024341251	CMakeFiles/airplay_crypto.dir/playfair/hand_garble.c.o	4fc950129bbc5a91
+2	138	1774951217064158438	CMakeFiles/airplay_crypto.dir/playfair/omg_hax.c.o	94761ffc1133ebeb
+138	185	1774951217111236892	/Users/me/work/dashnex/air/app/build/intermediates/cxx/Debug/2o4o1db7/obj/armeabi-v7a/libairplay_crypto.so	63f26c812511383e
