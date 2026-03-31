@@ -193,8 +193,8 @@ class RtspSession(
         // Core identity
         dict["deviceID"]    = NSString(macHex)
         dict["macAddress"]  = NSString(macHex)
-        dict["name"]        = NSString("MiBox AirPlay")
-        dict["model"]       = NSString("AppleTV2,1")
+        dict["name"]        = NSString("Remote Play")
+        dict["model"]       = NSString("AppleTV3,2")
         dict["sourceVersion"] = NSString("220.68")
         dict["pi"]          = NSString(stableUuid(macHex))
         dict["pk"]          = NSData(pairing.serverEdPublicKeyBytes)
@@ -245,6 +245,11 @@ class RtspSession(
         display["refreshRate"]    = NSNumber(1.0 / 60.0)
         display["overscanned"]    = NSNumber(true)
         display["features"]       = NSNumber(14)
+        display["maxFPS"]         = NSNumber(60)
+        val fpsList = NSArray(2)
+        fpsList.setValue(0, NSNumber(30))
+        fpsList.setValue(1, NSNumber(60))
+        display["supportedFPSList"] = fpsList
         displays.setValue(0, display)
         dict["displays"] = displays
 
@@ -385,14 +390,18 @@ class RtspSession(
                             // Video/mirroring stream
                             val connId = (streamDict["streamConnectionID"] as? NSNumber)?.longValue() ?: 0L
                             videoStreamConnId = connId
-                            Log.i(tag, "SETUP-2: video streamConnectionID=$connId")
+                            Log.i(tag, "SETUP-2: video streamConnectionID=$connId streamDict=${streamDict.allKeys().toList()}")
+                            for (k in streamDict.allKeys()) {
+                                Log.d(tag, "  stream[$k] = ${streamDict[k]}")
+                            }
 
                             // Derive per-stream cipher using iPhone's streamConnectionID
                             finalizeStreamCipher(connId)
 
-                            // Open video data TCP server
+                            // Open video data TCP server with large receive buffer
                             val videoSrv = ServerSocket()
                             videoSrv.reuseAddress = true
+                            videoSrv.receiveBufferSize = 1024 * 1024
                             videoSrv.bind(java.net.InetSocketAddress(0)) // ephemeral port
                             videoDataServer = videoSrv
                             Log.i(tag, "Video data port: ${videoSrv.localPort}")
@@ -559,8 +568,10 @@ class RtspSession(
             Log.i(tag, "Waiting for video connection on port ${server.localPort}...")
             server.soTimeout = 30_000
             val socket = server.accept()
+            socket.receiveBufferSize = 1024 * 1024
+            socket.tcpNoDelay = true
             Log.i(tag, "Video connected from ${socket.inetAddress}")
-            val dis = DataInputStream(socket.getInputStream())
+            val dis = DataInputStream(BufferedInputStream(socket.getInputStream(), 256 * 1024))
             val header = ByteArray(128)
 
             while (running.get()) {

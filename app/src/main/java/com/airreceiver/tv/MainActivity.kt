@@ -107,7 +107,7 @@ class MainActivity : FragmentActivity() {
 
     private fun startAndBindService() {
         val intent = Intent(this, AirPlayService::class.java).apply {
-            putExtra(AirPlayService.EXTRA_DEVICE_NAME, "MiBox AirPlay")
+            putExtra(AirPlayService.EXTRA_DEVICE_NAME, "Remote Play")
         }
         startForegroundService(intent)
         bindService(intent, serviceConnection, BIND_AUTO_CREATE)

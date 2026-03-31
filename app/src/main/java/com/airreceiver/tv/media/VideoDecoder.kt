@@ -28,12 +28,14 @@ class VideoDecoder {
     private var streamHeight = 1080
     private var frameIndex = 0L
     private var renderedCount = 0L
+    private var lastIdrFrame: ByteArray? = null
 
     /** Called when the first decoded frame is rendered. */
     var onFirstFrameRendered: (() -> Unit)? = null
     /** Called when the decoder reports the actual video dimensions. */
     var onVideoSizeChanged: ((width: Int, height: Int) -> Unit)? = null
     private var firstFrameRendered = false
+    private var lastCheckRendered = 0L
 
     // Queue of available input buffer indices (filled by callback)
     private val inputBufferQueue = ArrayBlockingQueue<Int>(16)
@@ -41,22 +43,6 @@ class VideoDecoder {
 
     fun setSurface(s: Surface) {
         surface = s
-        // Warm up the Amlogic decoder — first init stalls, second works
-        warmupDecoder(s)
-    }
-
-    private fun warmupDecoder(surf: Surface) {
-        try {
-            val fmt = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 320, 240)
-            val c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
-            c.configure(fmt, surf, null, 0)
-            c.start()
-            c.stop()
-            c.release()
-            Log.i(tag, "Decoder warmup complete")
-        } catch (e: Exception) {
-            Log.w(tag, "Decoder warmup failed: ${e.message}")
-        }
     }
 
     fun setCodecParams(sps: ByteArray, pps: ByteArray) {
@@ -178,12 +164,21 @@ class VideoDecoder {
 
     private fun reinitCodec() {
         stop()
+        // Amlogic decoder needs time to fully release hardware resources
+        Thread.sleep(500)
         initCodec()
     }
 
     fun decodeFrame(data: ByteArray, presentationTimeUs: Long = 0) {
         if (!started.get()) initCodec()
         val c = codec ?: return
+
+        // Cache IDR frames for reinit recovery
+        val firstNalType = if (data.size > 4 && data[0] == 0.toByte() && data[1] == 0.toByte() && data[2] == 0.toByte() && data[3] == 1.toByte())
+            data[4].toInt() and 0x1F else -1
+        if (firstNalType == 5 || firstNalType == 6) { // IDR or SEI+IDR
+            lastIdrFrame = data.copyOf()
+        }
 
         try {
             val pts = System.nanoTime() / 1000
@@ -201,10 +196,22 @@ class VideoDecoder {
                 Log.w(tag, "No input buffer (frame=$frameIndex)")
             }
 
+            // Detect decoder stall: if no new output in 200 frames, reinit
+            if (frameIndex % 200 == 0L) {
+                if (renderedCount == lastCheckRendered && frameIndex > 200) {
+                    Log.i(tag, "Decoder stalled at frame=$frameIndex rendered=$renderedCount — reinitializing")
+                    reinitCodec()
+                    lastIdrFrame?.let { idr ->
+                        Log.i(tag, "Replaying cached IDR (${idr.size} bytes)")
+                        decodeFrame(idr)
+                    }
+                    return
+                }
+                lastCheckRendered = renderedCount
+            }
+
             if (frameIndex <= 5 || frameIndex % 100 == 0L) {
-                val nalType = if (data.size > 4 && data[0] == 0.toByte() && data[1] == 0.toByte() && data[2] == 0.toByte() && data[3] == 1.toByte())
-                    data[4].toInt() and 0x1F else -1
-                Log.d(tag, "Frame #$frameIndex nal=$nalType size=${data.size} rendered=$renderedCount queued=${inputIdx != null}")
+                Log.d(tag, "Frame #$frameIndex nal=$firstNalType size=${data.size} rendered=$renderedCount queued=${inputIdx != null}")
             }
         } catch (e: Exception) {
             Log.e(tag, "Decode error: ${e.message}")
